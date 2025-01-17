@@ -11,3 +11,8 @@ export interface GestureEventType {
         translationY: number;
     };
 }
+
+export interface Coordinate {
+    x: number;
+    y: number;
+} 

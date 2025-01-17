@@ -3,7 +3,8 @@ import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Colors from '../styles/Colors';
 import Header from './Header';
-import { Direction, GestureEventType } from '../types/types';
+import { Coordinate, Direction, GestureEventType } from '../types/types';
+import Snake from './Snake';
 
 const SNAKE_INITIAL_POSITION = [{ x: 5, y: 5 }];
 const FOOD_INITIAL_POSITION = { x: 5, y: 20 };
@@ -13,13 +14,47 @@ const SCORE_INCREMENT = 10;
 
 export default function Game():JSX.Element {
    const [direction, setDirection] = React.useState<Direction>(Direction.RIGHT);
+   const [snake, setSnake] = React.useState<Coordinate[]>(SNAKE_INITIAL_POSITION);
+   const [food, setfood] = React.useState<Coordinate>(FOOD_INITIAL_POSITION);
    const [isGameOver, setIsGameOver] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         if (!isGameOver) {
-            // moveSnake(); min 39:00
+            const intervalID = setInterval(() => {
+                moveSnake();
+            }, MOVE_INTERVAL);
+            return () => clearInterval(intervalID);
+
+            moveSnake();
         }
-    }, [isGameOver]);
+    }, [isGameOver, snake]);
+
+    const moveSnake = () => {
+    const snakeHead = snake[0];
+    const newHead = {  ...snakeHead };
+
+    //game over
+
+    switch (direction) {
+        case Direction.UP:
+            newHead.y -= 1;
+            break;
+        case Direction.DOWN:
+            newHead.y += 1;
+            break;
+        case Direction.LEFT:
+            newHead.x -= 1;
+            break;
+        case Direction.RIGHT:
+            newHead.x += 1;
+            break;
+        default:
+            break;
+    };
+
+    // check if snake eats food
+    setSnake([newHead, ...snake.slice(0, -1)]); // move snake
+    };
 
    const handleGesture = (event: GestureEventType) => {
     const {translationX, translationY} = event.nativeEvent;
@@ -38,7 +73,7 @@ export default function Game():JSX.Element {
             setDirection(Direction.UP);
         }
     }
-   };
+    };
 
   return (
     <PanGestureHandler onGestureEvent={handleGesture}>
@@ -47,7 +82,7 @@ export default function Game():JSX.Element {
                 
             </Header>*/}
             <View style={styles.boundaries}>
-                <View style={styles.snake} />
+                <Snake snake={snake}/>
             </View>
         </SafeAreaView>
     </PanGestureHandler>
@@ -66,10 +101,5 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 30,
         borderColor: Colors.secondary,
         backgroundColor: Colors.background,
-    },
-    snake: {
-        width: 20,
-        height: 20,
-        backgroundColor: Colors.primary,
     },
 });
