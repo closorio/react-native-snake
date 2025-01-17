@@ -5,6 +5,10 @@ import Colors from '../styles/Colors';
 import Header from './Header';
 import { Coordinate, Direction, GestureEventType } from '../types/types';
 import Snake from './Snake';
+import { checkGameOver } from '../utils/checkGameOver';
+import Food from './Food';
+import { checkEatsFood } from '../utils/checkEatsFood';
+import { randomFoodPosition } from '../utils/randomFoodPosition';
 
 const SNAKE_INITIAL_POSITION = [{ x: 5, y: 5 }];
 const FOOD_INITIAL_POSITION = { x: 5, y: 20 };
@@ -15,8 +19,9 @@ const SCORE_INCREMENT = 10;
 export default function Game():JSX.Element {
    const [direction, setDirection] = React.useState<Direction>(Direction.RIGHT);
    const [snake, setSnake] = React.useState<Coordinate[]>(SNAKE_INITIAL_POSITION);
-   const [food, setfood] = React.useState<Coordinate>(FOOD_INITIAL_POSITION);
+   const [food, setFood] = React.useState<Coordinate>(FOOD_INITIAL_POSITION);
    const [isGameOver, setIsGameOver] = React.useState<boolean>(false);
+   const [score, setScore] = React.useState<number>(0);
 
     React.useEffect(() => {
         if (!isGameOver) {
@@ -24,8 +29,6 @@ export default function Game():JSX.Element {
                 moveSnake();
             }, MOVE_INTERVAL);
             return () => clearInterval(intervalID);
-
-            moveSnake();
         }
     }, [isGameOver, snake]);
 
@@ -33,7 +36,11 @@ export default function Game():JSX.Element {
     const snakeHead = snake[0];
     const newHead = {  ...snakeHead };
 
-    //game over
+    // game over
+    if (checkGameOver (snakeHead, GAME_BOUNDS)) {
+        setIsGameOver((prev) => !prev);
+        return;
+    }
 
     switch (direction) {
         case Direction.UP:
@@ -52,9 +59,15 @@ export default function Game():JSX.Element {
             break;
     };
 
-    // check if snake eats food
-    setSnake([newHead, ...snake.slice(0, -1)]); // move snake
+    // check if snake eats food 
+    if (checkEatsFood(newHead, food, 2)) {
+        setFood(randomFoodPosition(GAME_BOUNDS.xMax, GAME_BOUNDS.yMax));
+        setSnake([newHead, ...snake]);
+        setScore(score + SCORE_INCREMENT);
+    } else {
+        setSnake([newHead, ...snake.slice(0, -1)]); // move snake
     };
+    }
 
    const handleGesture = (event: GestureEventType) => {
     const {translationX, translationY} = event.nativeEvent;
@@ -83,6 +96,7 @@ export default function Game():JSX.Element {
             </Header>*/}
             <View style={styles.boundaries}>
                 <Snake snake={snake}/>
+                <Food x={food.x} y={food.y}/>
             </View>
         </SafeAreaView>
     </PanGestureHandler>
