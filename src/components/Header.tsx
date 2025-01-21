@@ -17,15 +17,35 @@ export default function Header({
     isPaused,
 }: HeaderProps): JSX.Element {
     return (
-        <View style={styles.header}>
+        <View style={styles.container}>
+            <TouchableOpacity onPress={reloadGame}>
+                <Ionicons name="reload" size={35} color={Colors.primary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={pauseGame}>
+                <FontAwesome
+                    name={isPaused ? "play" : "pause"}
+                    size={35}
+                    color={Colors.primary}
+                />
+            </TouchableOpacity>
           {children} 
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    header: {
-        borderWidth: 1,
+    container: {
+        flex: 0.05,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
         borderColor: Colors.secondary,
+        borderWidth: 12,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        borderBottomWidth: 0,
+        padding: 15,
+        backgroundColor: Colors.background,
     },
 });
